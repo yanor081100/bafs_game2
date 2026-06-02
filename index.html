@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAFS 專業會計師分類挑戰賽</title>
+    <style>
+        :root {
+            --ledger-bg: #fdfbf7; /* 擬真會計賬簿微黃紙張色 */
+            --accounting-navy: #1b365d; /* 專業會計師墨藍色 */
+            --gold-accent: #b89742; /* 金融金棕色 */
+            --success-green: #27ae60;
+            --error-red: #c0392b;
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, "Microsoft JhengHei", sans-serif;
+            background-color: #f0f3f6;
+            background-image: linear-gradient(#e4e9f0 1px, transparent 1px), linear-gradient(90deg, #e4e9f0 1px, transparent 1px);
+            background-size: 20px 20px; /* 背景微弱格子，營造會計計算紙效果 */
+            margin: 0;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 20px auto;
+            background: var(--ledger-bg);
+            padding: 35px;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-left: 8px solid var(--accounting-navy); /* 模擬厚重賬簿邊緣 */
+            position: relative;
+        }
+
+        /* 頂部雙紅線裝飾，模擬經典會計賬簿（Double Rule） */
+        .header-ruler {
+            border-top: 1px solid #e74c3c;
+            border-bottom: 1px solid #e74c3c;
+            height: 3px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accounting-navy);
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #555;
+            font-style: italic;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        /* 題目切換區 */
+        .selector-zone {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .btn-level {
+            padding: 10px 18px;
+            background: #e0e6ed;
+            color: var(--accounting-navy);
+            border: 1px solid #b2c2d4;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-level.active {
+            background: var(--accounting-navy);
+            color: white;
+            border-color: var(--accounting-navy);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        /* 儀表板狀態欄 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f1f4f8;
+            padding: 12px 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            background: var(--gold-accent);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+
+        /* 模擬會計T字帳 / 財務報告框 */
+        .ledger-box {
+            background: white;
+            border: 1px solid #94a3b8;
+            border-top: 3px solid var(--accounting-navy);
+            padding: 25px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .statement-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accounting-navy);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .statement-date {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .account-card {
+            background: #fffdf9;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid var(--gold-accent);
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .account-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--accounting-navy);
+        }
+
+        .account-value {
+            font-size: 1.4rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 1px solid #333; /* 模擬金額下劃線 */
+            padding-bottom: 2px;
+        }
+
+        /* 經典五大分類按鈕 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-option {
+            padding: 14px;
+            font-size: 1rem;
+            background: white;
+            border: 1px solid #94a3b8;
+            border-bottom: 3px solid #64748b;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-weight: bold;
+            color: var(--accounting-navy);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-option:hover {
+            background: #f8fafc;
+            border-bottom-color: var(--accounting-navy);
+            transform: translateY(-1px);
+        }
+
+        .btn-option:active {
+            transform: translateY(1px);
+            border-bottom-width: 1px;
+        }
+
+        .btn-option::before {
+            content: "⚖️";
+        }
+
+        /* 答案回饋彈窗 */
+        .feedback {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 4px;
+            font-size: 1.05rem;
+            display: none;
+            line-height: 1.5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .feedback.correct {
+            display: block;
+            background-color: #ecfdf5;
+            color: var(--success-green);
+            border: 1px solid #a7f3d0;
+        }
+
+        .feedback.correct .praise {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feedback.wrong {
+            display: block;
+            background-color: #fff5f5;
+            color: var(--error-red);
+            border: 1px solid #fed7d7;
+        }
+
+        .feedback.wrong .error-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #9b2c2c;
+        }
+
+        /* 結算報告書 */
+        .summary-zone {
+            display: none;
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .audit-seal {
+            border: 3px double var(--success-green);
+            color: var(--success-green);
+            display: inline-block;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            transform: rotate(-3deg);
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .btn-restart {
+            padding: 12px 30px;
+            background: var(--accounting-navy);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-restart:hover {
+            background: var(--gold-accent);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>BAFS 財務狀況表項目分類挑戰</h1>
+    <div class="subtitle">—— 準會計師核數訓練 ——</div>
+    <div class="header-ruler"></div>
+
+    <!-- 題目切換區 -->
+    <div class="selector-zone">
+        <button class="btn-level active" onclick="changeLevel(0)">個案一：小新陀螺店</button>
+        <button class="btn-level" onclick="changeLevel(1)">個案二：阿妙文具店</button>
+        <button class="btn-level" onclick="changeLevel(2)">個案三：大雄玩具店</button>
+    </div>
+
+    <!-- 狀態欄 -->
+    <div class="status-bar">
+        <div><span class="badge">核數對象</span> <span id="current-company">載入中...</span></div>
+        <div>進度：<span id="progress" style="font-family: monospace; font-weight: bold;">0/0</span></div>
+        <div>目前得分：<span id="score" style="color: var(--gold-accent); font-weight: bold; font-size: 1.1rem;">0</span></div>
+    </div>
+
+    <!-- 遊戲主分頁 -->
+    <div id="quiz-container">
+        <div class="ledger-box">
+            <div class="statement-title" id="company-info">公司財務狀況表</div>
+            <div class="statement-date" id="company-date">截至201X年12月31日</div>
+            
+            <div style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 10px;">請審核並為以下賬戶進行正確歸類：</div>
+            
+            <div class="account-card">
+                <div class="account-name" id="account-name">帳戶名稱</div>
+                <div class="account-value" id="account-value">$0</div>
+            </div>
+        </div>
+
+        <!-- 分類按鈕 -->
+        <div class="options-grid">
+            <button class="btn-option" onclick="checkAnswer('NCA')">非流動資產 (Non-current Assets)</button>
+            <button class="btn-option" onclick="checkAnswer('CA')">流動資產 (Current Assets)</button>
+            <button class="btn-option" onclick="checkAnswer('EQ')">資本的計算項目 (Capital/Drawings/Profit)</button>
+            <button class="btn-option" onclick="checkAnswer('NCL')">非流動負債 (Non-current Liabilities)</button>
+            <button class="btn-option" onclick="checkAnswer('CL')">流動負債 (Current Liabilities)</button>
+        </div>
+
+        <!-- 答案及讚賞回饋 -->
+        <div id="feedback-box" class="feedback"></div>
+    </div>
+
+    <!-- 審核結算報告 -->
+    <div id="summary-container" class="summary-zone">
+        <div class="header-ruler"></div>
+        <h2>📋 臨時核數報告 (Audit Summary)</h2>
+        <p style="font-size: 1.1rem;">你在本次個案審查中獲得了 <span id="final-score" style="color: var(--gold-accent); font-weight: bold; font-size: 1.4rem;">0</span> 分！</p>
+        <div class="audit-seal" id="audit-seal">審核通過 (PASSED)</div>
+        <p id="evaluation-text" style="color: #475569; max-width: 500px; margin: 0 auto 25px auto;"></p>
+        <button class="btn-restart" onclick="resetCurrentLevel()">重新審查此店舖</button>
+    </div>
+</div>
+
+<script>
+    // 港式會計讚賞語句庫
+    const praises = [
+        "做得好！數目分明，非常有潛質！",
+        "完全正確！你有高級會計師嘅精明眼光！",
+        "好犀利！條數清清楚楚，完全難你唔倒！",
+        "準確無誤！你對會計恆等式（Accounting Equation）理解得非常透徹！",
+        "精彩分類！直覺好準，直逼執業會計師水準！",
+        "眼光獨到！一眼就睇穿呢個帳戶嘅本質！",
+        "直覺好敏銳！完全無被題目誤導！"
+    ];
+
+    // 題目數據（完全切合中四/初學入門 BAFS 程度）
+    const quizData = [
+        {
+            company: "小新陀螺店",
+            date: "截至201X年12月31日的財務狀況表",
+            items: [
+                { name: "汽車 (Motor Vehicles)", value: "100,000", type: "NCA", reason: "汽車是業務長期使用的經營資產，預期使用超過一年，屬於非流動資產。" },
+                { name: "設備 (Equipment)", value: "80,000", type: "NCA", reason: "設備供店舖長期運作之用，屬於非流動資產。" },
+                { name: "存貨 (Inventory)", value: "30,000", type: "CA", reason: "存貨是打算在日常業務中短期內出售換取現金的資產，屬於流動資產。" },
+                { name: "應收貨款 (Trade Receivables)", value: "12,000", type: "CA", reason: "賒銷貨物給客戶而應收取的款項，預期短期內變現，屬於流動資產。" },
+                { name: "現金 (Cash)", value: "6,000", type: "CA", reason: "手頭現金是流動性最高的資產，屬於流動資產。" },
+                { name: "資本，201X年1月1日 (Capital)", value: "30,000", type: "EQ", reason: "期初資本是東主投入業務的資源，屬於權益/資本計算的起點。" },
+                { name: "加：淨利潤 (Net Profit)", value: "100,000", type: "EQ", reason: "年度賺取的淨利潤歸東主所有，會增加權益，故在資本部分相加。" },
+                { name: "減：提用 (Drawings)", value: "2,000", type: "EQ", reason: "東主提取業務資金作私人用途，會減少東主權益，故在資本部分扣減。" },
+                { name: "貸款：好有錢銀行 (3年期)", value: "50,000", type: "NCL", reason: "還款期超過一年的銀行貸款，屬於長期負債，即非流動負債。" },
+                { name: "貸款：陳小姐 (半年期)", value: "30,000", type: "CL", reason: "還款期在一年之內的短期貸款，屬於流動負債。" },
+                { name: "應付貨款 (Trade Payables)", value: "20,000", type: "CL", reason: "賒購貨物欠供應商的款項，需要在短期內償還，屬於流動負債。" }
+            ]
+        },
+        {
+            company: "阿妙文具店",
+            date: "截至202X年6月30日的財務狀況表",
+            items: [
+                { name: "店舖物業 (Premises)", value: "500,000", type: "NCA", reason: "店舖物業是公司擁有的固定不動產，供長期使用，屬於非流動資產。" },
+                { name: "辦公室家具 (Fixtures & Fittings)", value: "45,000", type: "NCA", reason: "家具與裝置預期可使用多年，屬於非流動資產。" },
+                { name: "應收貨款 (Trade Receivables)", value: "8,500", type: "CA", reason: "賒銷產生的短期債權，屬於流動資產。" },
+                { name: "銀行存款 (Cash at Bank)", value: "95,000", type: "CA", reason: "存放於銀行的流動資金，屬於流動資產。" },
+                { name: "期初資本 (Opening Capital)", value: "400,000", type: "EQ", reason: "這是東主最初投入業務的資本基數。" },
+                { name: "減：淨虧損 (Net Loss)", value: "15,000", type: "EQ", reason: "經營虧損減少了業務的價值，會扣減東主權益。" },
+                { name: "減：提用 (Drawings)", value: "3,500", type: "EQ", reason: "提用會令總資本減少，屬於資本部分扣減項。" },
+                { name: "銀行長期貸款 (5年期)", value: "200,000", type: "NCL", reason: "還款期長達五年的負債，屬於非流動負債。" },
+                { name: "應付貨款 (Trade Payables)", value: "35,000", type: "CL", reason: "欠供應商的短期日常貨款，屬於流動負債。" }
+            ]
+        },
+        {
+            company: "大雄玩具店",
+            date: "截至202X年3月31日的財務狀況表",
+            items: [
+                { name: "電腦系統 (Computer Equipment)", value: "15,000", type: "NCA", reason: "電腦設備供業務多年日常操作使用，屬於非流動資產。" },
+                { name: "玩具存貨 (Inventory)", value: "64,000", type: "CA", reason: "待售的玩具是公司準備短期內出售的流動資產。" },
+                { name: "銀行存款 (Cash at Bank)", value: "12,000", type: "CA", reason: "銀行戶口內的存款，隨時可動用，屬於流動資產。" },
+                { name: "期初資本 (Capital)", value: "50,000", type: "EQ", reason: "期初資本屬於權益類別。" },
+                { name: "加：淨利潤 (Net Profit)", value: "28,000", type: "EQ", reason: "淨利潤會撥入並調高期末的資本總額。" },
+                { name: "應付貨款 (Trade Payables)", value: "14,500", type: "CL", reason: "經營日常欠款，需在一年內清還，屬於流動負債。" }
+            ]
+        }
+    ];
+
+    let currentLevel = 0;
+    let currentItemIndex = 0;
+    let score = 0;
+    let activeItems = [];
+
+    function initGame() {
+        const levelData = quizData[currentLevel];
+        document.getElementById("current-company").innerText = levelData.company;
+        document.getElementById("company-info").innerText = levelData.company;
+        document.getElementById("company-date").innerText = levelData.date;
+        
+        // 隨機打亂題目順序
+        activeItems = [...levelData.items].sort(() => Math.random() - 0.5);
+        
+        currentItemIndex = 0;
+        score = 0;
+        
+        document.getElementById("score").innerText = score;
+        document.getElementById("quiz-container").style.display = "block";
+        document.getElementById("summary-container").style.display = "none";
+        document.getElementById("feedback-box").style.display = "none";
+        
+        updateQuestion();
+    }
+
+    function updateQuestion() {
+        document.getElementById("progress").innerText = `${currentItemIndex + 1}/${activeItems.length}`;
+        const item = activeItems[currentItemIndex];
+        document.getElementById("account-name").innerText = item.name;
+        document.getElementById("account-value").innerText = `$${item.value}`;
+    }
+
+    function checkAnswer(userChoice) {
+        const item = activeItems[currentItemIndex];
+        const feedbackBox = document.getElementById("feedback-box");
+        
+        setButtonsEnabled(false);
+
+        if (userChoice === item.type) {
+            score += 10;
+            document.getElementById("score").innerText = score;
+            
+            // 隨機抽選香港會計師讚賞語
+            const randomPraise = praises[Math.floor(Math.random() * praises.length)];
+            
+            feedbackBox.className = "feedback correct";
+            feedbackBox.innerHTML = `
+                <div class="praise">🎉 ${randomPraise}</div>
+                <div><strong>分錄解析：</strong>${item.reason}</div>
+            `;
+        } else {
+            feedbackBox.className = "feedback wrong";
+            feedbackBox.innerHTML = `
+                <div class="error-title">⚠️ 分類出現誤差 (Discrepancy Detected)</div>
+                <div>應該歸類為：<strong>${getCategoryName(item.type)}</strong>。</div>
+                <div style="margin-top: 5px;"><strong>會計原則：</strong>${item.reason}</div>
+            `;
+        }
+
+        // 給予學生充足時間閱讀讚賞語和解析（2.5秒）
+        setTimeout(() => {
+            feedbackBox.style.display = "none";
+            currentItemIndex++;
+            setButtonsEnabled(true);
+            
+            if (currentItemIndex < activeItems.length) {
+                updateQuestion();
+            } else {
+                showSummary();
+            }
+        }, 2500);
+    }
+
+    function getCategoryName(type) {
+        switch(type) {
+            case 'NCA': return '非流動資產 (Non-current Assets)';
+            case 'CA': return '流動資產 (Current Assets)';
+            case 'EQ': return '資本的計算項目 (Equity Component)';
+            case 'NCL': return '非流動負債 (Non-current Liabilities)';
+            case 'CL': return '流動負債 (Current Liabilities)';
+            default: return '';
+        }
+    }
+
+    function setButtonsEnabled(enabled) {
+        const buttons = document.querySelectorAll('.btn-option');
+        buttons.forEach(btn => btn.disabled = !enabled);
+    }
+
+    function showSummary() {
+        document.getElementById("quiz-container").style.display = "none";
+        document.getElementById("summary-container").style.display = "block";
+        document.getElementById("final-score").innerText = score;
+        
+        const maxScore = activeItems.length * 10;
+        const percentage = score / maxScore;
+        let evalText = "";
+        const seal = document.getElementById("audit-seal");
+        
+        if (percentage === 1) {
+            seal.innerText = "🌟 完美審計 (EXCELLENT)";
+            seal.style.borderInter = "3px double #27ae60";
+            seal.style.color = "#27ae60";
+            evalText = "天生會計材料！你成功做到「零誤差核數」，對財務狀況表的架構瞭如指掌，可以直接晉升為首席審計師！";
+        } else if (percentage >= 0.7) {
+            seal.innerText = "✅ 滿意審核 (SATISFACTORY)";
+            seal.style.border = "3px double #2980b9";
+            seal.style.color = "#2980b9";
+            evalText = "表現理想！大部份項目都分類得井井有條，條數好清晰。稍微留意錯咗嘅地方就可以達到完美境界！";
+        } else {
+            seal.innerText = "❌ 需修正賬目 (RE-AUDIT REQUIRED)";
+            seal.style.border = "3px double #c0392b";
+            seal.style.color = "#c0392b";
+            evalText = "部分賬目分類出現偏差。唔緊要，會計係一門熟能生巧嘅學問，建議重新溫習「資產、負債、資本」的區別，再挑戰一次！";
+        }
+        document.getElementById("evaluation-text").innerText = evalText;
+    }
+
+    function changeLevel(levelIndex) {
+        currentLevel = levelIndex;
+        const buttons = document.querySelectorAll('.btn-level');
+        buttons.forEach((btn, idx) => {
+            if(idx === levelIndex) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        initGame();
+    }
+
+    function resetCurrentLevel() {
+        initGame();
+    }
+
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
